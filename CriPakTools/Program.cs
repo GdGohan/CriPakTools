@@ -42,10 +42,8 @@ namespace CriPakTools
             {
                 string extractMe = args[1];
 
-                List<FileEntry> entries = null;
-
-                entries = (extractMe.ToUpper() == "ALL") ? cpk.FileTable.Where(x => x.FileType == "FILE").ToList() : cpk.FileTable.Where(x => ((x.DirName != null) ? x.DirName + "/" : "") + x.FileName.ToString().ToLower() == extractMe.ToLower()).ToList();
-
+                List<FileEntry> entries = cpk.FileTable.Where(x => (((x.DirName != null) ? x.DirName + "/" : "") + x.FileName.ToString()).ToLower() == extractMe.ToLower()).ToList();
+                
                 if (entries.Count == 0)
                 {
                     Console.WriteLine("Cannot find " + extractMe + ".");
