@@ -1,7 +1,7 @@
 name: Compilar CriPakTools Corrigido
 
 on:
-  workflow_dispatch: # Permite que você clique em um botão para iniciar a compilação manualmente
+  workflow_dispatch:
 
 jobs:
   build:
@@ -13,7 +13,33 @@ jobs:
 
     - name: Configurar o MSBuild
       uses: microsoft/setup-msbuild@v2
-      
+
+    - name: Atualizar Target Framework e Corrigir Bug
+      shell: powershell
+      run: |
+        # 1. Atualiza o projeto para .NET 4.8 para resolver o erro de SDK ausente
+        $csprojPath = "CriPakTools/CriPakTools.csproj"
+        if (-not (Test-Path $csprojPath)) { $csprojPath = "CriPakTools.csproj" }
+        
+        if (Test-Path $csprojPath) {
+            $xml = [xml](Get-Content $csprojPath)
+            $ns = New-Object System.Xml.XmlNamespaceManager($xml.NameTable)
+            $ns.AddNamespace("ns", "http://schemas.microsoft.com/developer/msbuild/003")
+            
+            # Altera a versão do framework para 4.8
+            $nodeVersion = $xml.SelectSingleNode("//ns:TargetFrameworkVersion", $ns)
+            if ($nodeVersion) { $nodeVersion.InnerText = "v4.8" }
+            
+            # Remove o Perfil Client que causa incompatibilidade
+            $nodeProfile = $xml.SelectSingleNode("//ns:TargetFrameworkProfile", $ns)
+            if ($nodeProfile) { $nodeProfile.ParentNode.RemoveChild($nodeProfile) }
+            
+            $xml.Save($csprojPath)
+            Write-Host "Projeto atualizado para .NET Framework 4.8 com sucesso!"
+        } else {
+            Write-Warning "Arquivo .csproj não foi encontrado no caminho esperado."
+        }
+        
     - name: Compilar o Executável
       run: msbuild CriPakTools.sln /p:Configuration=Release /p:Platform="Any CPU"
 
