@@ -34,3 +34,11 @@ jobs:
 
     - name: Compilar o Executável
       run: msbuild CriPakTools.sln /p:Configuration=Release /p:Platform="Any CPU" /p:TargetFrameworkVersion=v4.8
+
+    - name: Disponibilizar para Download (Artifact)
+      uses: actions/upload-artifact@v4
+      with:
+        name: CriPakTools-Corrigido
+        path: |
+          CriPakTools/bin/Release/CriPakTools.exe
+          CriPakTools/bin/Release/CriPakTools.pdb
